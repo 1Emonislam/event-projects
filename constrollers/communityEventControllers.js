@@ -177,7 +177,14 @@ const allCoummunityEvents = asyncHandler(async (req, res) => {
     search = search?.trim();
     // console.log(search)
     const KeyWordRegExp = new RegExp(search, "i");
-    const communityEvent = await (await CommunityEvent.find().populate("user")).filter({$or:[{"first_name":KeyWordRegExp}]})
-    res.json({ "communityEvent": communityEvent })
+    const communityEvent = await CommunityEvent.find({$or:[{hosted_by: KeyWordRegExp},{event_name: KeyWordRegExp},{location: KeyWordRegExp},{industry: KeyWordRegExp},{"user.first_name": KeyWordRegExp},{"user.last_name": KeyWordRegExp},{"user.gender": KeyWordRegExp},{"user.industry": KeyWordRegExp}]}).populate({
+        path: "user",
+    }).sort({createdAt:1,_id:-1}).limit(limit * 1).skip((page - 1) * limit);
+    const totalEvents = await CommunityEvent.find({}).count();
+    const count = await CommunityEvent.find({$or:[{hosted_by: KeyWordRegExp},{event_name: KeyWordRegExp},{location: KeyWordRegExp},{industry: KeyWordRegExp},{"user.first_name": KeyWordRegExp},{"user.last_name": KeyWordRegExp},{"user.gender": KeyWordRegExp},{"user.industry": KeyWordRegExp}]}).populate({
+        path: "user",
+    }).sort({createdAt:1,_id:-1}).count();
+    // console.log(communityEvent)
+    res.json({totalEvents,count, "communityEvent": communityEvent })
 })
 module.exports = { createCommunityEvent, getCommunitySingleEvent, updateCommunityEvent, deleteCommunityEvent, getAllCoummunityEvent, joinPeople, getJoinPeople, myCommunityEvents, allCoummunityEvents, myJoinedEvents };
