@@ -112,7 +112,7 @@ const getEvents = asyncHandler(async (req, res) => {
             });
             return acc;
         }, [])
-        res.status(200).json({ totalEvents,count, "event": events })
+        res.status(200).json({ totalEvents,count, "events": events })
     } catch (error) {
         return res.status(400).json({ "error": error.message })
     }
