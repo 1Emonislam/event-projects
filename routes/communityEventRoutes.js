@@ -3,7 +3,7 @@ const { createCommunityEvent, getCommunitySingleEvent, updateCommunityEvent, del
 const { protect } = require('../middleware/authMiddleware');
 const router = express.Router();
 router.route('/').get(protect, getAllCoummunityEvent)
-router.route('/allEvents').get(allCoummunityEvents)
+router.route('/allEvents').get(protect,allCoummunityEvents)
 router.route('/create').post(protect, createCommunityEvent)
 router.route('/:id').get(protect, getCommunitySingleEvent).put(protect, updateCommunityEvent).delete(protect, deleteCommunityEvent);
 router.route('/join/:id').put(protect, joinPeople)

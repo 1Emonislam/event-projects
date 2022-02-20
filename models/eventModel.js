@@ -40,6 +40,12 @@ const EventSchema = mongoose.Schema({
         required:true,
         default: false
     },
+    location:{
+        type: String,
+    },
+    industry: {
+        type: String,
+    },
     preset: {
         type: String,
     },

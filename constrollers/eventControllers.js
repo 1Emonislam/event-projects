@@ -4,8 +4,8 @@ const Event = require('../models/eventModel');
 //creating Event
 const createEvent = asyncHandler(async (req, res) => {
     // console.log(req.user._id)
-    const { event_image, list_of_communities, hosted_by, event_link, event_name, is_event_virtual, event_date, list_of_interest, event_description, join_people, notify_members, preset } = req.body;
-    const event = new Event({ event_image, list_of_communities, event_name, is_event_virtual, hosted_by, event_link, event_date, list_of_interest, event_description, join_people, notify_members, preset, user: req.user._id });
+    const { event_image, list_of_communities, hosted_by, event_link, event_name, is_event_virtual, event_date, list_of_interest, event_description, join_people,industry,location, notify_members, preset } = req.body;
+    const event = new Event({ event_image, list_of_communities, event_name, is_event_virtual, hosted_by, event_link, event_date, list_of_interest, event_description,industry,location, join_people, notify_members, preset, user: req.user._id });
     const user = await User.findOne({ user: req.user._id })
     if (user) {
         const createdEvent = await event.save();
@@ -28,7 +28,7 @@ const getByUser = asyncHandler(async (req, res) => {
 
 //update current user Events 
 const updateEvent = asyncHandler(async (req, res) => {
-    const { event_image, list_of_communities, hosted_by, event_link, event_name, is_event_virtual, event_date, list_of_interest, event_description, join_people, notify_members, preset } = req.body;
+    const { event_image, list_of_communities, hosted_by, event_link, event_name, is_event_virtual, event_date, list_of_interest, event_description, join_people, notify_members,industry,location, preset } = req.body;
     const event = await Event.findOne({ _id: req.params.id });
     if (event.user.toString() !== req.user._id.toString()) {
         res.status(401).json({ "error": "You can't perform this action" });
@@ -40,6 +40,8 @@ const updateEvent = asyncHandler(async (req, res) => {
         event.event_name = event_name || event.event_name;
         event.is_event_virtual = is_event_virtual || event.is_event_virtual;
         event.hosted_by = hosted_by || event.hosted_by;
+        event.location = location || event.location;
+        event.industry = industry || event.industry;
         event.event_link = event_link || event.event_link;
         event.event_date = event_date || event.event_date;
         event.list_of_interest = list_of_interest || event.list_of_interest;
@@ -155,5 +157,20 @@ const myJoinedEvents = asyncHandler(async (req, res) => {
         return res.status(400).json({ "error": error.message })
     }
 })
-
-module.exports = { createEvent, getByUser, updateEvent, getJoinPeople, deleteEvent, getAllEvents, joinPeople, myJoinedEvents };
+const allEvents = asyncHandler(async (req, res) => {
+    let { page = 1, limit = 10, search } = req.query;
+    // console.log(search)
+    search = search?.trim();
+    // console.log(search)
+    const KeyWordRegExp = new RegExp(search, "i");
+    const events = await Event.find({$or:[{hosted_by: KeyWordRegExp},{event_name: KeyWordRegExp},{location: KeyWordRegExp},{industry: KeyWordRegExp},{"user.first_name": KeyWordRegExp},{"user.last_name": KeyWordRegExp},{"user.gender": KeyWordRegExp},{"user.industry": KeyWordRegExp}]}).sort({createdAt:1,_id:-1}).populate({
+        path: "user",
+    }).sort({createdAt:1,_id:-1}).limit(limit * 1).skip((page - 1) * limit);
+    const totalEvents = await Event.find({}).count();
+    const count = await Event.find({$or:[{hosted_by: KeyWordRegExp},{event_name: KeyWordRegExp},{location: KeyWordRegExp},{industry: KeyWordRegExp},{"user.first_name": KeyWordRegExp},{"user.last_name": KeyWordRegExp},{"user.gender": KeyWordRegExp},{"user.industry": KeyWordRegExp}]}).populate({
+        path: "user",
+    }).sort({createdAt:1,_id:-1}).count();
+    // console.log(communityEvent)
+    res.json({totalEvents,count, "events": events })
+})
+module.exports = { createEvent, getByUser, updateEvent, getJoinPeople, deleteEvent, getAllEvents, allEvents,joinPeople, myJoinedEvents };
