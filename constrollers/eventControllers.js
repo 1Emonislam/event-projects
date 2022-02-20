@@ -4,8 +4,8 @@ const Event = require('../models/eventModel');
 //creating Event
 const createEvent = asyncHandler(async (req, res) => {
     // console.log(req.user._id)
-    const { event_image, list_of_communities, hosted_by, event_link, event_name, is_event_virtual, event_date, list_of_interest, event_description, join_people,industry,location, notify_members, preset } = req.body;
-    const event = new Event({ event_image, list_of_communities, event_name, is_event_virtual, hosted_by, event_link, event_date, list_of_interest, event_description,industry,location, join_people, notify_members, preset, user: req.user._id });
+    const { event_image, list_of_communities, hosted_by, event_link, event_name, is_event_virtual, event_date, list_of_interest, event_description, join_people, industry, location, notify_members, preset } = req.body;
+    const event = new Event({ event_image, list_of_communities, event_name, is_event_virtual, hosted_by, event_link, event_date, list_of_interest, event_description, industry, location, join_people, notify_members, preset, user: req.user._id });
     const user = await User.findOne({ user: req.user._id })
     if (user) {
         const createdEvent = await event.save();
@@ -28,7 +28,7 @@ const getByUser = asyncHandler(async (req, res) => {
 
 //update current user Events 
 const updateEvent = asyncHandler(async (req, res) => {
-    const { event_image, list_of_communities, hosted_by, event_link, event_name, is_event_virtual, event_date, list_of_interest, event_description, join_people, notify_members,industry,location, preset } = req.body;
+    const { event_image, list_of_communities, hosted_by, event_link, event_name, is_event_virtual, event_date, list_of_interest, event_description, join_people, notify_members, industry, location, preset } = req.body;
     const event = await Event.findOne({ _id: req.params.id });
     if (event.user.toString() !== req.user._id.toString()) {
         res.status(401).json({ "error": "You can't perform this action" });
@@ -68,8 +68,8 @@ const getAllEvents = asyncHandler(async (req, res) => {
         const KeyWordRegExp = new RegExp(search, "i");
 
         const result = await Event.find({
-			$or: [{ event_description: KeyWordRegExp }, { event_name: KeyWordRegExp }],
-		});
+            $or: [{ event_description: KeyWordRegExp }, { event_name: KeyWordRegExp }],
+        });
         const events = result.reduce((acc, curr) => {
             acc.push({
                 ...curr._doc,
@@ -82,6 +82,37 @@ const getAllEvents = asyncHandler(async (req, res) => {
             return acc;
         }, [])
         res.status(200).json({ "event": events })
+    } catch (error) {
+        return res.status(400).json({ "error": error.message })
+    }
+}
+)
+const getEvents = asyncHandler(async (req, res) => {
+    try {
+        let { page = 1, limit = 10, search } = req.query;
+        // console.log(search)
+        search = search?.trim();
+        // console.log(search)
+        const KeyWordRegExp = new RegExp(search, "i");
+        const result = await Event.find({
+            $or: [{ event_description: KeyWordRegExp }, { event_name: KeyWordRegExp }, { hosted_by: KeyWordRegExp }, { location: KeyWordRegExp }, { industry: KeyWordRegExp }, { "user.first_name": KeyWordRegExp }, { "user.last_name": KeyWordRegExp }, { "user.gender": KeyWordRegExp }, { "user.industry": KeyWordRegExp }],
+        }).sort({ createdAt: 1, _id: -1 }).populate({ path: 'user' }).limit(limit * 1).skip((page - 1) * limit);
+        const count = await Event.find({
+            $or: [{ event_description: KeyWordRegExp }, { event_name: KeyWordRegExp }, { hosted_by: KeyWordRegExp }, { location: KeyWordRegExp }, { industry: KeyWordRegExp }, { "user.first_name": KeyWordRegExp }, { "user.last_name": KeyWordRegExp }, { "user.gender": KeyWordRegExp }, { "user.industry": KeyWordRegExp }],
+        }).sort({ createdAt: 1, _id: -1 }).populate({ path: 'user' }).count();
+        const totalEvents = await Event.find().count();
+        const events = result.reduce((acc, curr) => {
+            acc.push({
+                ...curr._doc,
+                join_people: {
+                    totalMember: curr?._doc?.join_people?.length,
+                    amIjoined: curr?._doc?.join_people?.some(member => member._id.toString() === req.user._id.toString()),
+                    topMembers: curr?._doc?.join_people?.slice(0, 5)
+                }
+            });
+            return acc;
+        }, [])
+        res.status(200).json({ totalEvents,count, "event": events })
     } catch (error) {
         return res.status(400).json({ "error": error.message })
     }
@@ -139,7 +170,7 @@ const getJoinPeople = asyncHandler(async (req, res) => {
 
 const myJoinedEvents = asyncHandler(async (req, res) => {
     try {
-        const result = await Event.find({ "join_people" : req.user._id }).populate({ path: 'join_people', select: '_id pic' });
+        const result = await Event.find({ "join_people": req.user._id }).populate({ path: 'join_people', select: '_id pic' });
         const event = result.reduce((acc, curr) => {
             acc.push({
                 ...curr._doc,
@@ -157,20 +188,5 @@ const myJoinedEvents = asyncHandler(async (req, res) => {
         return res.status(400).json({ "error": error.message })
     }
 })
-const allEvents = asyncHandler(async (req, res) => {
-    let { page = 1, limit = 10, search } = req.query;
-    // console.log(search)
-    search = search?.trim();
-    // console.log(search)
-    const KeyWordRegExp = new RegExp(search, "i");
-    const events = await Event.find({$or:[{hosted_by: KeyWordRegExp},{event_name: KeyWordRegExp},{location: KeyWordRegExp},{industry: KeyWordRegExp},{"user.first_name": KeyWordRegExp},{"user.last_name": KeyWordRegExp},{"user.gender": KeyWordRegExp},{"user.industry": KeyWordRegExp}]}).sort({createdAt:1,_id:-1}).populate({
-        path: "user",
-    }).sort({createdAt:1,_id:-1}).limit(limit * 1).skip((page - 1) * limit);
-    const totalEvents = await Event.find({}).count();
-    const count = await Event.find({$or:[{hosted_by: KeyWordRegExp},{event_name: KeyWordRegExp},{location: KeyWordRegExp},{industry: KeyWordRegExp},{"user.first_name": KeyWordRegExp},{"user.last_name": KeyWordRegExp},{"user.gender": KeyWordRegExp},{"user.industry": KeyWordRegExp}]}).populate({
-        path: "user",
-    }).sort({createdAt:1,_id:-1}).count();
-    // console.log(communityEvent)
-    res.json({totalEvents,count, "events": events })
-})
-module.exports = { createEvent, getByUser, updateEvent, getJoinPeople, deleteEvent, getAllEvents, allEvents,joinPeople, myJoinedEvents };
+
+module.exports = { createEvent, getByUser, updateEvent, getJoinPeople, deleteEvent, getAllEvents, getEvents, joinPeople, myJoinedEvents };
