@@ -4,8 +4,8 @@ const User = require('../models/userModel');
 
 const createCommunityEvent = asyncHandler(async (req, res) => {
     // console.log(req.user._id)
-    const { event_image, list_of_communities, hosted_by, event_link, event_name, is_event_virtual, event_date, list_of_interest, event_description, join_people, notify_members, preset } = req.body;
-    const event = new CommunityEvent({ event_image, list_of_communities, hosted_by, event_link, event_name, is_event_virtual, event_date, list_of_interest, event_description, join_people, notify_members, preset, user: req.user._id });
+    const { event_image, list_of_communities, hosted_by, event_link, event_name, is_event_virtual, event_date, list_of_interest, event_description, join_people,industry,location, notify_members, preset } = req.body;
+    const event = new CommunityEvent({ event_image, list_of_communities, hosted_by, event_link, event_name, is_event_virtual, event_date, list_of_interest,industry,location, event_description, join_people, notify_members, preset, user: req.user._id });
     const user = await User.findOne({ user: req.user._id })
     if (user) {
         const createdEvent = await event.save();
@@ -38,6 +38,8 @@ const updateCommunityEvent = asyncHandler(async (req, res) => {
         communityEvent.event_link = event_link || communityEvent.event_link;
         communityEvent.event_name = event_name || communityEvent.event_name;
         communityEvent.is_event_virtual = is_event_virtual || communityEvent.is_event_virtual;
+        communityEvent.industry = industry || communityEvent.industry;
+        communityEvent.location = location || communityEvent.location;
         communityEvent.event_date = event_date || communityEvent.event_date;
         communityEvent.list_of_interest = list_of_interest || communityEvent.list_of_interest;
         communityEvent.event_description = event_description || communityEvent.event_description;

@@ -4,7 +4,7 @@ const generateToken = require('../utils/generateToken');
 const { sendOtpVia } = require('../utils/otp');
 
 const registerUser = asyncHandler(async (req, res) => {
-    const { first_name, last_name, phone, email, gender, password, suggestions, interest, prompts, pic, interest_list } = req.body;
+    const { first_name, last_name, phone, email, gender,location,industry, password, suggestions, interest, prompts, pic, interest_list } = req.body;
     // console.log(req.body)
     const emailExist = await User.findOne({ email });
     const phoneExist = await User.findOne({ phone });
@@ -69,6 +69,8 @@ const registerUser = asyncHandler(async (req, res) => {
             verify: 'unverified',
             password,
             pic,
+            industry,
+            location,
             suggestions,
             interest,
             prompts,
@@ -87,6 +89,8 @@ const registerUser = asyncHandler(async (req, res) => {
                 phone: user.phone,
                 bio: user.bio,
                 pic: user.pic,
+                location: user.location,
+                industry: user.industry,
                 suggestions: user.suggestions,
                 interest: user.interest,
                 prompts: user.prompts,
@@ -128,6 +132,8 @@ const getSingleUser = asyncHandler(async (req, res) => {
             phone: user.phone,
             bio: user.bio,
             pic: user.pic,
+            location: user.location,
+            industry: user.industry,
             suggestions: user.suggestions,
             interest: user.interest,
             prompts: user.prompts,
@@ -170,6 +176,8 @@ const loginUser = asyncHandler(async (req, res) => {
                 phone: user.phone,
                 bio: user.bio,
                 pic: user.pic,
+                location: user.location,
+                industry: user.industry,
                 suggestions: user.suggestions,
                 interest: user.interest,
                 prompts: user.prompts,
@@ -211,6 +219,8 @@ const updateUser = asyncHandler(async (req, res) => {
         user.interest_list = interest_list || user.interest_list;
         user.interest = interest || user.interest;
         user.prompts = prompts || user.prompts;
+        user.location= location || user.location;
+        user.industry= industry || user.industry;
         const updatedUser = await user.save();
         if (!updatedUser) {
             return res.status(404).json({ "error": "user permission denied!" });
@@ -227,6 +237,8 @@ const updateUser = asyncHandler(async (req, res) => {
                 phone: updatedUser.phone,
                 bio: updatedUser.bio,
                 pic: updatedUser.pic,
+                location: updatedUser.location,
+                industry: updatedUser.industry,
                 suggestions: updatedUser.suggestions,
                 interest: updatedUser.interest,
                 prompts: updatedUser.prompts,
