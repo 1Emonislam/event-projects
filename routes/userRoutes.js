@@ -1,5 +1,5 @@
 const express = require('express');
-const { registerUser, loginUser, updateUser, getAllUsers, makeAdmin, getAllAdmins, getSingleUser, getAdmin, currentProfile, removeAdmin } = require('../constrollers/userControllers');
+const { registerUser, loginUser, updateUser, getAllUsers, makeAdmin, getAllAdmins, getSingleUser, getAdmin, currentProfile, removeAdmin, userListSearch } = require('../constrollers/userControllers');
 const { protect } = require('../middleware/authMiddleware');
 const {verificationCheck} = require('../verification/verification')
 const router = express.Router();
@@ -7,6 +7,7 @@ const router = express.Router();
 
 router.route('/').post(registerUser).get(protect,getAllUsers).put(protect,updateUser);
 router.route('/profile').get(protect,currentProfile)
+router.route('/userList').get(userListSearch)
 router.route('/administrators').get(protect,getAllAdmins)
 router.route('/:id').get(getSingleUser)
 router.route('/otp-verification').put(protect,verificationCheck);

@@ -66,8 +66,8 @@ const getAllCoummunityEvent = asyncHandler(async (req, res) => {
         const KeyWordRegExp = new RegExp(search, "i");
 
         const result = await CommunityEvent.find({
-			$or: [{ event_description: KeyWordRegExp }, { event_name: KeyWordRegExp }],
-		}).populate({ path: 'join_people', select: '_id pic' });
+            $or: [{ event_description: KeyWordRegExp }, { event_name: KeyWordRegExp }],
+        }).populate({ path: 'join_people', select: '_id pic' });
 
         const community = result.reduce((acc, curr) => {
             acc.push({
@@ -80,7 +80,7 @@ const getAllCoummunityEvent = asyncHandler(async (req, res) => {
             });
             return acc;
         }, [])
-    
+
         res.json({ "communityEvent": community })
     } catch (error) {
         return res.status(400).json({ "error": error.message })
@@ -141,7 +141,7 @@ const myCommunityEvents = asyncHandler(async (req, res) => {
         return res.status(404).json({ "error": "my community joined event emty!" })
     } if (myEvents) {
         const myEventCounter = myEvents?.length;
-        return res.status(200).json({ "myCommunityEventCount": myEventCounter,"myCommunityEvents": myEvents })
+        return res.status(200).json({ "myCommunityEventCount": myEventCounter, "myCommunityEvents": myEvents })
     }
 })
 
@@ -153,7 +153,7 @@ const myJoinedEvents = asyncHandler(async (req, res) => {
     try {
         // mongodb search function
 
-        const result = await CommunityEvent.find({ "join_people" : req.user._id }).populate({ path: 'join_people', select: '_id pic' });
+        const result = await CommunityEvent.find({ "join_people": req.user._id }).populate({ path: 'join_people', select: '_id pic' });
         const community = result.reduce((acc, curr) => {
             acc.push({
                 ...curr._doc,
@@ -171,4 +171,5 @@ const myJoinedEvents = asyncHandler(async (req, res) => {
         return res.status(400).json({ "error": error.message })
     }
 })
-module.exports = { createCommunityEvent, getCommunitySingleEvent, updateCommunityEvent, deleteCommunityEvent, getAllCoummunityEvent, joinPeople, getJoinPeople,myCommunityEvents,myJoinedEvents };
+
+module.exports = { createCommunityEvent, getCommunitySingleEvent, updateCommunityEvent, deleteCommunityEvent, getAllCoummunityEvent, joinPeople, getJoinPeople, myCommunityEvents, myJoinedEvents };

@@ -103,7 +103,7 @@ const registerUser = asyncHandler(async (req, res) => {
             error.email = 'Email already exists'
         }
         if (phoneExist) {
-            error.phone =  'Phone already exists'
+            error.phone = 'Phone already exists'
         }
         return res.status(302).json({ error })
     }
@@ -297,5 +297,12 @@ const removeAdmin = asyncHandler(async (req, res) => {
         return res.status(401).json({ "error": "user permission denied admin permission required!" });
     }
 })
-
-module.exports = { registerUser, loginUser, updateUser, getAllUsers, makeAdmin, currentProfile, getAllAdmins, getSingleUser, removeAdmin };
+const userListSearch = asyncHandler(async (req, res) => {
+    let { page = 1, limit = 10, search } = req.query;
+    search = search?.trim();
+    const KeyWordRegExp = new RegExp(search, "i");
+    const userList = await User.find({ $or: [{ first_name: KeyWordRegExp }, { email: KeyWordRegExp }, { phone: KeyWordRegExp }, { gender: KeyWordRegExp }], }).limit(limit * 1).skip((page - 1) * limit);
+    const count = await User.find({ $or: [{ first_name: KeyWordRegExp }, { email: KeyWordRegExp }, { phone: KeyWordRegExp }, { gender: KeyWordRegExp }], }).count();
+    res.json({ count, "user": userList })
+})
+module.exports = { registerUser, loginUser, updateUser, getAllUsers, makeAdmin, currentProfile, getAllAdmins, getSingleUser, removeAdmin, userListSearch };

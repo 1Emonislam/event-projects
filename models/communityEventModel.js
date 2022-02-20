@@ -11,6 +11,9 @@ const CommunityEventSchema = mongoose.Schema({
         type: String,
         required: [true, "Event Name is required"]
     },
+    location:{
+        type:String,
+    },
     event_link:{
         type:String,
     },
