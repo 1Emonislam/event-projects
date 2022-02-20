@@ -51,6 +51,12 @@ const userSchema = mongoose.Schema(
         gender:{
             type:String
         },
+        location:{
+            type:String
+        },
+        industry:{
+            type:String
+        },
         suggestions:[],
         interest:[],
         prompts:[],

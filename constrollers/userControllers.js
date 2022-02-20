@@ -299,10 +299,22 @@ const removeAdmin = asyncHandler(async (req, res) => {
 })
 const userListSearch = asyncHandler(async (req, res) => {
     let { page = 1, limit = 10, search } = req.query;
+    // console.log(search)
     search = search?.trim();
     const KeyWordRegExp = new RegExp(search, "i");
-    const userList = await User.find({ $or: [{ first_name: KeyWordRegExp }, { email: KeyWordRegExp }, { phone: KeyWordRegExp }, { gender: KeyWordRegExp }], }).limit(limit * 1).skip((page - 1) * limit);
-    const count = await User.find({ $or: [{ first_name: KeyWordRegExp }, { email: KeyWordRegExp }, { phone: KeyWordRegExp }, { gender: KeyWordRegExp }], }).count();
-    res.json({ count, "user": userList })
+    const userList = await User.find({ $or: [{ first_name: KeyWordRegExp },{last_name: KeyWordRegExp}, { email: KeyWordRegExp }, { phone: KeyWordRegExp },{location: KeyWordRegExp},{industry:KeyWordRegExp}, { gender: KeyWordRegExp }], }).sort({createdAt:1,_id:-1}).limit(limit * 1).skip((page - 1) * limit);
+    const count = await User.find({ $or: [{ first_name: KeyWordRegExp },{last_name: KeyWordRegExp}, { email: KeyWordRegExp }, { phone: KeyWordRegExp },{location: KeyWordRegExp},{industry:KeyWordRegExp}, { gender: KeyWordRegExp }], }).sort({createdAt:1,_id:-1}).count();
+    const totalUser = await User.find({}).count();
+    res.json({totalUser, count, "user": userList })
 })
-module.exports = { registerUser, loginUser, updateUser, getAllUsers, makeAdmin, currentProfile, getAllAdmins, getSingleUser, removeAdmin, userListSearch };
+const AdminListSearch = asyncHandler(async (req, res) => {
+    let { page = 1, limit = 10, search } = req.query;
+    // console.log(search)
+    search = search?.trim();
+    const KeyWordRegExp = new RegExp(search, "i");
+    const userList = await User.find({ $or: [{ first_name: KeyWordRegExp },{last_name: KeyWordRegExp}, { email: KeyWordRegExp }, { phone: KeyWordRegExp },{location: KeyWordRegExp},{industry:KeyWordRegExp}, { gender: KeyWordRegExp }],isAdmin:true }).sort({createdAt:1,_id:-1}).limit(limit * 1).skip((page - 1) * limit);
+    const count = await User.find({ $or: [{ first_name: KeyWordRegExp },{last_name: KeyWordRegExp}, { email: KeyWordRegExp }, { phone: KeyWordRegExp },{location: KeyWordRegExp},{industry:KeyWordRegExp}, { gender: KeyWordRegExp }],isAdmin:true }).sort({createdAt:1,_id:-1}).count();
+    const totalUser = await User.find({}).count();
+    res.json({totalUser, count, "user": userList })
+})
+module.exports = { registerUser, loginUser, updateUser, getAllUsers, makeAdmin, currentProfile, getAllAdmins, getSingleUser, removeAdmin, userListSearch,AdminListSearch };

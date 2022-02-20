@@ -46,6 +46,9 @@ const CommunityEventSchema = mongoose.Schema({
     preset: {
         type: String,
     },
+    industry: {
+        type: String,
+    },
     user: {
         type: mongoose.Schema.Types.ObjectId,
         required: true,

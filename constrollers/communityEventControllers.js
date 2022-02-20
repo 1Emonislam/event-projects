@@ -171,5 +171,13 @@ const myJoinedEvents = asyncHandler(async (req, res) => {
         return res.status(400).json({ "error": error.message })
     }
 })
-
-module.exports = { createCommunityEvent, getCommunitySingleEvent, updateCommunityEvent, deleteCommunityEvent, getAllCoummunityEvent, joinPeople, getJoinPeople, myCommunityEvents, myJoinedEvents };
+const allCoummunityEvents = asyncHandler(async (req, res) => {
+    let { page = 1, limit = 10, search } = req.query;
+    // console.log(search)
+    search = search?.trim();
+    // console.log(search)
+    const KeyWordRegExp = new RegExp(search, "i");
+    const communityEvent = await (await CommunityEvent.find().populate("user")).filter({$or:[{"first_name":KeyWordRegExp}]})
+    res.json({ "communityEvent": communityEvent })
+})
+module.exports = { createCommunityEvent, getCommunitySingleEvent, updateCommunityEvent, deleteCommunityEvent, getAllCoummunityEvent, joinPeople, getJoinPeople, myCommunityEvents, allCoummunityEvents, myJoinedEvents };
